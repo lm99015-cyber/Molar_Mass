@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>화학식량 계산기</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%);
+      min-height: 100vh;
+      padding: 20px 16px;
+      color: #1a1a1a;
+    }
+    h1 {
+      font-size: 20px; font-weight: 600; color: #0e7490;
+      text-align: center; margin-bottom: 4px;
+    }
+    .subtitle { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
+
+    /* Legend */
+    .legend { display: flex; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+    .leg-dot { width: 13px; height: 13px; border-radius: 50%; }
+    .ld-metal    { background: #b3d4f0; }
+    .ld-metalloid{ background: #b8d9a0; }
+    .ld-nonmetal { background: #f5c97a; }
+
+    /* Periodic table */
+    .pt-wrap { overflow-x: auto; padding-bottom: 6px; }
+    .pt-grid {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      gap: 2px;
+      min-width: 640px;
+    }
+    .el {
+      border-radius: 4px; padding: 2px 1px; cursor: pointer;
+      text-align: center; border: 1.5px solid transparent;
+      transition: transform .1s; user-select: none;
+    }
+    .el:hover { transform: scale(1.13); z-index: 2; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+    .el .sym { font-size: 11px; font-weight: 600; line-height: 1.3; }
+    .el .num { font-size: 8px; opacity: .6; line-height: 1; }
+    .el.placeholder { visibility: hidden; pointer-events: none; }
+    .c-metal     { background: #b3d4f0; color: #1a3d5c; }
+    .c-metalloid { background: #b8d9a0; color: #2a4d1a; }
+    .c-nonmetal  { background: #f5c97a; color: #6b3d00; }
+    .pt-gap { grid-column: 1 / 19; height: 5px; }
+
+    /* Count popup */
+    .cnt-popup {
+      display: none; background: #fff; border: 1px solid #d1d5db;
+      border-radius: 12px; padding: 12px 14px; margin-top: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .cnt-popup.open { display: block; }
+    .cnt-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 10px; }
+    .cnt-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cnt-btn {
+      width: 38px; height: 38px; border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 15px; cursor: pointer; background: #f9fafb; color: #111;
+      transition: background .12s;
+    }
+    .cnt-btn:hover { background: #e0f2fe; }
+    .radio-badge {
+      font-size: 10px; background: #fef3c7; color: #92400e;
+      padding: 1px 5px; border-radius: 3px; margin-left: 4px;
+    }
+
+    /* Formula bar */
+    .formula-bar {
+      background: #fff; border: 1px solid #d1d5db; border-radius: 12px;
+      padding: 12px 16px; margin: 10px 0;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .formula-display {
+      font-family: 'Courier New', monospace; font-size: 20px;
+      font-weight: 600; color: #111; flex: 1; min-width: 120px; word-break: break-all;
+    }
+    .formula-placeholder { font-size: 14px; color: #9ca3af; flex: 1; }
+    .btn-icon {
+      padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 14px; cursor: pointer; background: #f9fafb; color: #374151;
+      transition: background .12s;
+    }
+    .btn-icon:hover { background: #f3f4f6; }
+    .btn-calc {
+      padding: 9px 22px; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      background: #0891b2; color: #fff; transition: background .12s;
+    }
+    .btn-calc:hover { background: #0e7490; }
+
+    /* Result */
+    .result-card {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px;
+      padding: 16px; margin-top: 4px;
+    }
+    .formula-header { font-size: 13px; color: #6b7280; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+    .formula-header span { font-weight: 600; color: #111; font-family: 'Courier New', monospace; }
+    .result-row {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 8px; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .r-sym  { font-size: 15px; font-weight: 600; color: #111; font-family: 'Courier New', monospace; }
+    .r-name { font-size: 11px; color: #9ca3af; }
+    .r-math { font-size: 12px; color: #6b7280; text-align: right; white-space: nowrap; }
+    .r-sub  { font-size: 13px; font-weight: 600; color: #111; text-align: right; white-space: nowrap; }
+    .result-total {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 12px 0 0;
+    }
+    .r-total-label { font-size: 14px; color: #6b7280; }
+    .r-total-val   { font-size: 28px; font-weight: 700; color: #0891b2; }
+    .r-unit        { font-size: 13px; color: #9ca3af; margin-left: 4px; }
+    .radio-note    { font-size: 11px; color: #b45309; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>⚗️ 화학식량 계산기</h1>
+<p class="subtitle">IUPAC 2021 표준 원자량 · 1~118번 원소 · 원소를 클릭해 화학식을 조합하세요</p>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot ld-metal"></div><span style="color:#1a3d5c">금속</span></div>
+  <div class="leg-item"><div class="leg-dot ld-metalloid"></div><span style="color:#2a4d1a">준금속</span></div>
+  <div class="leg-item"><div class="leg-dot ld-nonmetal"></div><span style="color:#6b3d00">비금속</span></div>
+</div>
+
+<div class="pt-wrap">
+  <div class="pt-grid" id="ptGrid"></div>
+</div>
+
+<div class="cnt-popup" id="cntPopup">
+  <div class="cnt-title" id="cntTitle"></div>
+  <div class="cnt-btns" id="cntBtns"></div>
+</div>
+
+<div class="formula-bar">
+  <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
+  <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">⌫</button>
+  <button class="btn-icon" onclick="clearFormula()">초기화</button>
+  <button class="btn-calc" onclick="calculate()">계산</button>
+</div>
+
+<div id="resultArea" style="display:none"></div>
+
+<script>
+const ELEMENTS = {
+  H:{name:"수소",mass:1.008,radio:false,cat:"nonmetal",g:1,p:1},
+  He:{name:"헬륨",mass:4.002602,radio:false,cat:"nonmetal",g:18,p:1},
+  Li:{name:"리튬",mass:6.94,radio:false,cat:"metal",g:1,p:2},
+  Be:{name:"베릴륨",mass:9.0121831,radio:false,cat:"metal",g:2,p:2},
+  B:{name:"붕소",mass:10.81,radio:false,cat:"metalloid",g:13,p:2},
+  C:{name:"탄소",mass:12.011,radio:false,cat:"nonmetal",g:14,p:2},
+  N:{name:"질소",mass:14.007,radio:false,cat:"nonmetal",g:15,p:2},
+  O:{name:"산소",mass:15.999,radio:false,cat:"nonmetal",g:16,p:2},
+  F:{name:"플루오린",mass:18.998403162,radio:false,cat:"nonmetal",g:17,p:2},
+  Ne:{name:"네온",mass:20.1797,radio:false,cat:"nonmetal",g:18,p:2},
+  Na:{name:"나트륨",mass:22.98976928,radio:false,cat:"metal",g:1,p:3},
+  Mg:{name:"마그네슘",mass:24.305,radio:false,cat:"metal",g:2,p:3},
+  Al:{name:"알루미늄",mass:26.9815384,radio:false,cat:"metal",g:13,p:3},
+  Si:{name:"규소",mass:28.085,radio:false,cat:"metalloid",g:14,p:3},
+  P:{name:"인",mass:30.973761998,radio:false,cat:"nonmetal",g:15,p:3},
+  S:{name:"황",mass:32.06,radio:false,cat:"nonmetal",g:16,p:3},
+  Cl:{name:"염소",mass:35.45,radio:false,cat:"nonmetal",g:17,p:3},
+  Ar:{name:"아르곤",mass:39.95,radio:false,cat:"nonmetal",g:18,p:3},
+  K:{name:"칼륨",mass:39.0983,radio:false,cat:"metal",g:1,p:4},
+  Ca:{name:"칼슘",mass:40.078,radio:false,cat:"metal",g:2,p:4},
+  Sc:{name:"스칸듐",mass:44.955907,radio:false,cat:"metal",g:3,p:4},
+  Ti:{name:"타이타늄",mass:47.867,radio:false,cat:"metal",g:4,p:4},
+  V:{name:"바나듐",mass:50.9415,radio:false,cat:"metal",g:5,p:4},
+  Cr:{name:"크로뮴",mass:51.9961,radio:false,cat:"metal",g:6,p:4},
+  Mn:{name:"망가니즈",mass:54.938043,radio:false,cat:"metal",g:7,p:4},
+  Fe:{name:"철",mass:55.845,radio:false,cat:"metal",g:8,p:4},
+  Co:{name:"코발트",mass:58.933194,radio:false,cat:"metal",g:9,p:4},
+  Ni:{name:"니켈",mass:58.6934,radio:false,cat:"metal",g:10,p:4},
+  Cu:{name:"구리",mass:63.546,radio:false,cat:"metal",g:11,p:4},
+  Zn:{name:"아연",mass:65.38,radio:false,cat:"metal",g:12,p:4},
+  Ga:{name:"갈륨",mass:69.723,radio:false,cat:"metal",g:13,p:4},
+  Ge:{name:"저마늄",mass:72.630,radio:false,cat:"metalloid",g:14,p:4},
+  As:{name:"비소",mass:74.921595,radio:false,cat:"metalloid",g:15,p:4},
+  Se:{name:"셀레늄",mass:78.971,radio:false,cat:"nonmetal",g:16,p:4},
+  Br:{name:"브로민",mass:79.904,radio:false,cat:"nonmetal",g:17,p:4},
+  Kr:{name:"크립톤",mass:83.798,radio:false,cat:"nonmetal",g:18,p:4},
+  Rb:{name:"루비듐",mass:85.4678,radio:false,cat:"metal",g:1,p:5},
+  Sr:{name:"스트론튬",mass:87.62,radio:false,cat:"metal",g:2,p:5},
+  Y:{name:"이트륨",mass:88.905838,radio:false,cat:"metal",g:3,p:5},
+  Zr:{name:"지르코늄",mass:91.224,radio:false,cat:"metal",g:4,p:5},
+  Nb:{name:"나이오븀",mass:92.90637,radio:false,cat:"metal",g:5,p:5},
+  Mo:{name:"몰리브데넘",mass:95.95,radio:false,cat:"metal",g:6,p:5},
+  Tc:{name:"테크네튬",mass:97,radio:true,cat:"metal",g:7,p:5},
+  Ru:{name:"루테늄",mass:101.07,radio:false,cat:"metal",g:8,p:5},
+  Rh:{name:"로듐",mass:102.90549,radio:false,cat:"metal",g:9,p:5},
+  Pd:{name:"팔라듐",mass:106.42,radio:false,cat:"metal",g:10,p:5},
+  Ag:{name:"은",mass:107.8682,radio:false,cat:"metal",g:11,p:5},
+  Cd:{name:"카드뮴",mass:112.414,radio:false,cat:"metal",g:12,p:5},
+  In:{name:"인듐",mass:114.818,radio:false,cat:"metal",g:13,p:5},
+  Sn:{name:"주석",mass:118.710,radio:false,cat:"metal",g:14,p:5},
+  Sb:{name:"안티모니",mass:121.760,radio:false,cat:"metalloid",g:15,p:5},
+  Te:{name:"텔루륨",mass:127.60,radio:false,cat:"metalloid",g:16,p:5},
+  I:{name:"아이오딘",mass:126.90447,radio:false,cat:"nonmetal",g:17,p:5},
+  Xe:{name:"제논",mass:131.293,radio:false,cat:"nonmetal",g:18,p:5},
+  Cs:{name:"세슘",mass:132.90545196,radio:false,cat:"metal",g:1,p:6},
+  Ba:{name:"바륨",mass:137.327,radio:false,cat:"metal",g:2,p:6},
+  La:{name:"란타넘",mass:138.90547,radio:false,cat:"metal",g:3,p:6},
+  Ce:{name:"세륨",mass:140.116,radio:false,cat:"metal",g:4,p:8},
+  Pr:{name:"프라세오디뮴",mass:140.90766,radio:false,cat:"metal",g:5,p:8},
+  Nd:{name:"네오디뮴",mass:144.242,radio:false,cat:"metal",g:6,p:8},
+  Pm:{name:"프로메튬",mass:145,radio:true,cat:"metal",g:7,p:8},
+  Sm:{name:"사마륨",mass:150.36,radio:false,cat:"metal",g:8,p:8},
+  Eu:{name:"유로퓸",mass:151.964,radio:false,cat:"metal",g:9,p:8},
+  Gd:{name:"가돌리늄",mass:157.25,radio:false,cat:"metal",g:10,p:8},
+  Tb:{name:"터븀",mass:158.925354,radio:false,cat:"metal",g:11,p:8},
+  Dy:{name:"디스프로슘",mass:162.500,radio:false,cat:"metal",g:12,p:8},
+  Ho:{name:"홀뮴",mass:164.930329,radio:false,cat:"metal",g:13,p:8},
+  Er:{name:"어븀",mass:167.259,radio:false,cat:"metal",g:14,p:8},
+  Tm:{name:"툴륨",mass:168.934219,radio:false,cat:"metal",g:15,p:8},
+  Yb:{name:"이터븀",mass:173.045,radio:false,cat:"metal",g:16,p:8},
+  Lu:{name:"루테튬",mass:174.9668,radio:false,cat:"metal",g:17,p:8},
+  Hf:{name:"하프늄",mass:178.486,radio:false,cat:"metal",g:4,p:6},
+  Ta:{name:"탄탈럼",mass:180.94788,radio:false,cat:"metal",g:5,p:6},
+  W:{name:"텅스텐",mass:183.84,radio:false,cat:"metal",g:6,p:6},
+  Re:{name:"레늄",mass:186.207,radio:false,cat:"metal",g:7,p:6},
+  Os:{name:"오스뮴",mass:190.23,radio:false,cat:"metal",g:8,p:6},
+  Ir:{name:"이리듐",mass:192.217,radio:false,cat:"metal",g:9,p:6},
+  Pt:{name:"백금",mass:195.084,radio:false,cat:"metal",g:10,p:6},
+  Au:{name:"금",mass:196.966570,radio:false,cat:"metal",g:11,p:6},
+  Hg:{name:"수은",mass:200.592,radio:false,cat:"metal",g:12,p:6},
+  Tl:{name:"탈륨",mass:204.38,radio:false,cat:"metal",g:13,p:6},
+  Pb:{name:"납",mass:207.2,radio:false,cat:"metal",g:14,p:6},
+  Bi:{name:"비스무트",mass:208.98040,radio:false,cat:"metal",g:15,p:6},
+  Po:{name:"폴로늄",mass:209,radio:true,cat:"metalloid",g:16,p:6},
+  At:{name:"아스타틴",mass:210,radio:true,cat:"metalloid",g:17,p:6},
+  Rn:{name:"라돈",mass:222,radio:true,cat:"nonmetal",g:18,p:6},
+  Fr:{name:"프랑슘",mass:223,radio:true,cat:"metal",g:1,p:7},
+  Ra:{name:"라듐",mass:226,radio:true,cat:"metal",g:2,p:7},
+  Ac:{name:"악티늄",mass:227,radio:true,cat:"metal",g:3,p:7},
+  Th:{name:"토륨",mass:232.0377,radio:true,cat:"metal",g:4,p:9},
+  Pa:{name:"프로트악티늄",mass:231.03588,radio:true,cat:"metal",g:5,p:9},
+  U:{name:"우라늄",mass:238.02891,radio:true,cat:"metal",g:6,p:9},
+  Np:{name:"넵투늄",mass:237,radio:true,cat:"metal",g:7,p:9},
+  Pu:{name:"플루토늄",mass:244,radio:true,cat:"metal",g:8,p:9},
+  Am:{name:"아메리슘",mass:243,radio:true,cat:"metal",g:9,p:9},
+  Cm:{name:"퀴륨",mass:247,radio:true,cat:"metal",g:10,p:9},
+  Bk:{name:"버클륨",mass:247,radio:true,cat:"metal",g:11,p:9},
+  Cf:{name:"칼리포늄",mass:251,radio:true,cat:"metal",g:12,p:9},
+  Es:{name:"아인슈타이늄",mass:252,radio:true,cat:"metal",g:13,p:9},
+  Fm:{name:"페르뮴",mass:257,radio:true,cat:"metal",g:14,p:9},
+  Md:{name:"멘델레븀",mass:258,radio:true,cat:"metal",g:15,p:9},
+  No:{name:"노벨륨",mass:259,radio:true,cat:"metal",g:16,p:9},
+  Lr:{name:"로렌슘",mass:262,radio:true,cat:"metal",g:17,p:9},
+  Rf:{name:"러더포듐",mass:267,radio:true,cat:"metal",g:4,p:7},
+  Db:{name:"더브늄",mass:270,radio:true,cat:"metal",g:5,p:7},
+  Sg:{name:"시보귬",mass:269,radio:true,cat:"metal",g:6,p:7},
+  Bh:{name:"보륨",mass:270,radio:true,cat:"metal",g:7,p:7},
+  Hs:{name:"하슘",mass:270,radio:true,cat:"metal",g:8,p:7},
+  Mt:{name:"마이트너륨",mass:278,radio:true,cat:"metal",g:9,p:7},
+  Ds:{name:"다름슈타튬",mass:281,radio:true,cat:"metal",g:10,p:7},
+  Rg:{name:"뢴트게늄",mass:281,radio:true,cat:"metal",g:11,p:7},
+  Cn:{name:"코페르니슘",mass:285,radio:true,cat:"metal",g:12,p:7},
+  Nh:{name:"니호늄",mass:286,radio:true,cat:"metal",g:13,p:7},
+  Fl:{name:"플레로븀",mass:289,radio:true,cat:"metal",g:14,p:7},
+  Mc:{name:"모스코븀",mass:289,radio:true,cat:"metal",g:15,p:7},
+  Lv:{name:"리버모륨",mass:293,radio:true,cat:"metal",g:16,p:7},
+  Ts:{name:"테네신",mass:293,radio:true,cat:"nonmetal",g:17,p:7},
+  Og:{name:"오가네손",mass:294,radio:true,cat:"nonmetal",g:18,p:7}
+};
+
+const CAT_CLASS = {metal:'c-metal', metalloid:'c-metalloid', nonmetal:'c-nonmetal'};
+const syms = Object.keys(ELEMENTS);
+const periodRow = {1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:9, 9:10};
+
+const grid = document.getElementById('ptGrid');
+const cells = {};
+for (let r = 1; r <= 10; r++) for (let c = 1; c <= 18; c++) cells[`${r},${c}`] = null;
+syms.forEach(sym => {
+  const el = ELEMENTS[sym];
+  cells[`${periodRow[el.p]},${el.g}`] = sym;
+});
+
+for (let r = 1; r <= 10; r++) {
+  if (r === 8) {
+    const sp = document.createElement('div');
+    sp.className = 'pt-gap';
+    grid.appendChild(sp);
+    continue;
+  }
+  for (let c = 1; c <= 18; c++) {
+    const sym = cells[`${r},${c}`];
+    const div = document.createElement('div');
+    if (!sym) {
+      div.className = 'el placeholder';
+      div.innerHTML = '<span class="sym" style="visibility:hidden">X</span>';
+    } else {
+      const el = ELEMENTS[sym];
+      div.className = `el ${CAT_CLASS[el.cat]}`;
+      div.title = `${sym} — ${el.name}\n원자량: ${el.mass}${el.radio ? ' (방사성)' : ''}`;
+      div.innerHTML = `<div class="num">${syms.indexOf(sym) + 1}</div><div class="sym">${sym}</div>`;
+      div.addEventListener('click', () => openPopup(sym));
+    }
+    grid.appendChild(div);
+  }
+}
+
+let formula = [];
+
+function openPopup(sym) {
+  const el = ELEMENTS[sym];
+  document.getElementById('cntTitle').innerHTML =
+    `<span style="font-family:'Courier New',monospace;font-size:15px">${sym}</span> `+
+    `<span style="font-size:12px;color:#6b7280">${el.name} · ${el.mass}</span>`+
+    (el.radio ? ' <span class="radio-badge">방사성</span>' : '') +
+    ` — 개수 선택`;
+  const btns = document.getElementById('cntBtns');
+  btns.innerHTML = '';
+  for (let n = 1; n <= 10; n++) {
+    const b = document.createElement('button');
+    b.className = 'cnt-btn'; b.textContent = n;
+    b.onclick = () => addElement(sym, n);
+    btns.appendChild(b);
+  }
+  const popup = document.getElementById('cntPopup');
+  popup.classList.add('open');
+  popup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function addElement(sym, cnt) {
+  if (formula.length > 0 && formula[formula.length - 1].sym === sym)
+    formula[formula.length - 1].cnt += cnt;
+  else formula.push({ sym, cnt });
+  document.getElementById('cntPopup').classList.remove('open');
+  updateDisplay();
+  document.getElementById('resultArea').style.display = 'none';
+}
+
+function updateDisplay() {
+  const d = document.getElementById('formulaDisplay');
+  if (!formula.length) {
+    d.className = 'formula-placeholder';
+    d.textContent = '원소를 클릭해 화학식을 만들어 보세요';
+  } else {
+    d.className = 'formula-display';
+    d.textContent = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
+  }
+}
+
+function backspace() {
+  if (!formula.length) return;
+  const last = formula[formula.length - 1];
+  if (last.cnt > 1) last.cnt--; else formula.pop();
+  updateDisplay();
+  document.getElementById('resultArea').style.display = 'none';
+}
+
+function clearFormula() {
+  formula = [];
+  document.getElementById('cntPopup').classList.remove('open');
+  updateDisplay();
+  document.getElementById('resultArea').style.display = 'none';
+}
+
+function formatMass(v) { return parseFloat(v.toFixed(9)).toString(); }
+
+function calculate() {
+  if (!formula.length) return;
+  let total = 0, hasRadio = false, rows = '';
+  formula.forEach(({ sym, cnt }) => {
+    const el = ELEMENTS[sym];
+    const sub = el.mass * cnt;
+    total += sub;
+    if (el.radio) hasRadio = true;
+    const rb = el.radio ? '<span class="radio-badge">방사성</span>' : '';
+    rows += `<div class="result-row">
+      <div><span class="r-sym">${sym}</span> <span class="r-name">${el.name}</span>${rb}</div>
+      <span class="r-math">${el.mass} × ${cnt}</span>
+      <span class="r-sub">${formatMass(sub)}</span>
+    </div>`;
+  });
+  const fs = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
+  const area = document.getElementById('resultArea');
+  area.className = 'result-card';
+  area.innerHTML = `
+    <div class="formula-header">화학식: <span>${fs}</span></div>
+    ${rows}
+    <div class="result-total">
+      <span class="r-total-label">화학식량</span>
+      <span><span class="r-total-val">${formatMass(total)}</span><span class="r-unit">g/mol</span></span>
+    </div>
+    ${hasRadio ? '<p class="radio-note">* 방사성 원소: 가장 안정한 동위원소 질량수 사용 (IUPAC 2021)</p>' : ''}`;
+  area.style.display = 'block';
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>
