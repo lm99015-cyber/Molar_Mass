@@ -38,9 +38,15 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .series-row{display:flex;gap:2px}
 
 /* Count popup + formula bar — 같은 줄, 같은 높이 */
-.bottom-bar{display:flex;align-items:stretch;justify-content:center;gap:8px;margin:4px 0;flex-shrink:0;flex-wrap:wrap}
-.cnt-popup{display:none;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;box-shadow:0 1px 4px rgba(0,0,0,.06);align-items:center;gap:6px}
+/* 화학식 바 + 결과창 공통 중앙 컨테이너 */
+.center-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+/* Count popup + formula bar */
+.bottom-bar{width:500px;max-width:90vw;margin:4px 0;flex-shrink:0;position:relative}
+.formula-bar-wrap{position:relative;width:100%}
+.cnt-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;box-shadow:0 4px 12px rgba(0,0,0,.12);align-items:center;gap:6px;white-space:nowrap;z-index:50}
 .cnt-popup.open{display:flex}
+.cnt-popup::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#d1d5db}
+.cnt-popup::before{content:'';position:absolute;top:calc(100% - 1px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fff;z-index:1}
 .cnt-title{font-size:11px;font-weight:600;color:#111;white-space:nowrap}
 .cnt-btns{display:flex;gap:4px;flex-wrap:nowrap}
 .cnt-btn{border:1px solid #d1d5db;border-radius:6px;font-size:12px;cursor:pointer;background:#f9fafb;color:#111;transition:background .12s;display:flex;align-items:center;justify-content:center}
@@ -48,28 +54,28 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .radio-badge{font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;margin-left:2px}
 
 /* Formula bar */
-.formula-bar{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:fit-content;max-width:100%}
-.formula-display{font-family:'Courier New',monospace;font-size:16px;font-weight:600;color:#111;min-width:100px;word-break:break-all}
-.formula-placeholder{font-size:12px;color:#9ca3af}
+.formula-bar{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:100%}
+.formula-display{font-family:'Courier New',monospace;font-size:16px;font-weight:600;color:#111;flex:1;min-width:60px;word-break:break-all}
+.formula-placeholder{font-size:12px;color:#9ca3af;flex:1}
 .btn-icon{padding:5px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;cursor:pointer;background:#f9fafb;color:#374151;transition:background .12s}
 .btn-icon:hover{background:#f3f4f6}
 .btn-calc{padding:5px 16px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:#0891b2;color:#fff;transition:background .12s;align-self:stretch}
 .btn-calc:hover{background:#0e7490}
 
 /* Result — 항상 보이는 고정 영역 */
-.result-wrap{flex-shrink:0;height:180px;overflow-y:auto;display:flex;justify-content:center;align-items:flex-start;padding-top:4px}
-.result-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:10px 20px;width:fit-content;min-width:320px;max-width:600px}
-.formula-header{font-size:12px;color:#6b7280;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e5e7eb}
-.formula-header span{font-weight:600;color:#111;font-family:'Courier New',monospace}
-.result-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6}
-.r-sym{font-size:14px;font-weight:600;color:#111;font-family:'Courier New',monospace}
-.r-name{font-size:11px;color:#9ca3af}
-.r-math{font-size:11px;color:#6b7280;text-align:right;white-space:nowrap}
-.r-sub{font-size:12px;font-weight:600;color:#111;text-align:right;white-space:nowrap}
+.result-wrap{flex-shrink:0;height:180px;overflow-y:auto;width:500px;max-width:90vw;padding-top:4px}
+.result-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px 20px;width:100%;box-sizing:border-box}
+.formula-header{font-size:13px;color:#374151;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e5e7eb;font-weight:500}
+.formula-header span{font-weight:700;color:#111;font-family:'Courier New',monospace}
+.result-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.r-sym{font-size:15px;font-weight:700;color:#111;font-family:'Courier New',monospace}
+.r-name{font-size:12px;color:#555;margin-left:2px}
+.r-math{font-size:13px;color:#444;text-align:right;white-space:nowrap}
+.r-sub{font-size:14px;font-weight:700;color:#111;text-align:right;white-space:nowrap}
 .result-total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0}
-.r-total-label{font-size:13px;color:#6b7280}
-.r-total-val{font-size:24px;font-weight:700;color:#0891b2}
-.r-unit{font-size:12px;color:#9ca3af;margin-left:4px}
+.r-total-label{font-size:14px;font-weight:600;color:#374151}
+.r-total-val{font-size:26px;font-weight:700;color:#0891b2}
+.r-unit{font-size:13px;color:#555;margin-left:4px}
 .radio-note{font-size:11px;color:#b45309;margin-top:6px}
 .iupac-note{font-size:11px;color:#9ca3af;margin-top:4px}
 .hint{margin-top:4px;text-align:center;font-size:11px;color:#aaa;flex-shrink:0}
@@ -99,21 +105,24 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
     <div class="series-inner" id="series-act-inner"></div>
   </div>
 
-  <div class="bottom-bar">
-    <div class="cnt-popup" id="cntPopup">
-      <div class="cnt-title" id="cntTitle"></div>
-      <div class="cnt-btns" id="cntBtns"></div>
+  <div class="center-col">
+    <div class="bottom-bar">
+      <div class="formula-bar-wrap">
+        <div class="cnt-popup" id="cntPopup">
+          <div class="cnt-title" id="cntTitle"></div>
+          <div class="cnt-btns" id="cntBtns"></div>
+        </div>
+        <div class="formula-bar">
+          <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
+          <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">← 삭제</button>
+          <button class="btn-icon" onclick="clearFormula()">초기화</button>
+          <button class="btn-calc" onclick="calculate()">계산</button>
+        </div>
+      </div>
     </div>
-    <div class="formula-bar">
-      <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
-      <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">← 삭제</button>
-      <button class="btn-icon" onclick="clearFormula()">초기화</button>
-      <button class="btn-calc" onclick="calculate()">계산</button>
+    <div class="result-wrap">
+      <div id="resultArea" style="display:none"></div>
     </div>
-  </div>
-
-  <div class="result-wrap">
-    <div id="resultArea" style="display:none"></div>
   </div>
 
 </div>
