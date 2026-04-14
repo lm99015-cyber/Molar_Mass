@@ -15,22 +15,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .filter-btn:hover{border-color:rgba(0,0,0,0.3);filter:brightness(0.95)}
 .filter-btn.active{border-color:rgba(0,0,0,0.35);filter:brightness(0.88);font-weight:600;color:#222}
 .filter-btn .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,0.15)}
-.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* 주기율표 중앙 정렬 */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;justify-content:center}
 .pt-grid{display:inline-grid;gap:2px}
 .period-label{display:flex;align-items:center;justify-content:center;font-size:10px;color:#888;font-weight:500}
 .group-label{display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;padding-bottom:2px}
-.el-cell{border-radius:4px;border:1px solid rgba(0,0,0,0.15);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.1s,box-shadow 0.1s;overflow:hidden}
-.el-cell:hover{transform:scale(1.05);z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.18)}
-.el-cell.selected{outline:2.5px solid #0891b2;outline-offset:1px;transform:scale(1.05);z-index:10}
+.el-cell{border-radius:4px;border:1px solid rgba(0,0,0,0.15);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;will-change:transform;transition:box-shadow 0.1s}
+.el-cell:hover{box-shadow:0 2px 6px rgba(0,0,0,0.22);filter:brightness(0.93);z-index:10}
+.el-cell.selected{outline:2.5px solid #0891b2;outline-offset:1px;z-index:10}
 .el-cell.dimmed{opacity:0.15}
 .el-num{line-height:1;color:rgba(0,0,0,0.5)}
 .el-sym{font-weight:600;line-height:1.1;color:rgba(0,0,0,0.85)}
 .el-name{line-height:1;color:rgba(0,0,0,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
 .placeholder{border-radius:4px;border:1px dashed #bbb;display:flex;align-items:center;justify-content:center;color:#aaa;cursor:default}
 .empty{background:transparent;border:none}
-.series-section{margin-top:14px;overflow-x:auto}
-.series-title{font-size:12px;color:#666;margin-bottom:4px;font-weight:500;padding-left:2px}
-.series-row{display:flex;gap:2px;padding-bottom:4px;flex-shrink:0}
+
+/* 시리즈 행 — 주기율표와 같은 너비로 중앙 정렬 */
+.series-section{margin-top:10px;display:flex;justify-content:center}
+.series-inner{display:flex;flex-direction:column;gap:4px}
+.series-label-row{display:flex;align-items:center;gap:2px}
+.series-title{font-size:12px;color:#666;font-weight:500;white-space:nowrap}
+.series-row{display:flex;gap:2px}
 
 /* Count popup */
 .cnt-popup{display:none;background:#fff;border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;margin-top:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
@@ -42,7 +48,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .radio-badge{font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;margin-left:4px}
 
 /* Formula bar */
-.formula-bar{background:#fff;border:1px solid #d1d5db;border-radius:12px;padding:12px 16px;margin:10px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.formula-bar-wrap{display:flex;justify-content:center;margin:10px 0}
+.formula-bar{background:#fff;border:1px solid #d1d5db;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06);width:fit-content;max-width:100%}
 .formula-display{font-family:'Courier New',monospace;font-size:20px;font-weight:600;color:#111;flex:1;min-width:120px;word-break:break-all}
 .formula-placeholder{font-size:14px;color:#9ca3af;flex:1}
 .btn-icon{padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;cursor:pointer;background:#f9fafb;color:#374151;transition:background .12s}
@@ -65,7 +72,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .r-unit{font-size:13px;color:#9ca3af;margin-left:4px}
 .radio-note{font-size:11px;color:#b45309;margin-top:8px}
 .iupac-note{font-size:11px;color:#9ca3af;margin-top:4px}
-.hint{margin-top:10px;text-align:center;font-size:11px;color:#aaa}
+.hint{margin-top:6px;text-align:center;font-size:11px;color:#aaa}
 </style>
 </head>
 <body>
@@ -78,16 +85,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="filter-btn" data-cat="metalloid" style="background:#C0DD97"><span class="dot" style="background:#639922"></span>준금속</button>
     <button class="filter-btn" data-cat="nonmetal" style="background:#FAC775"><span class="dot" style="background:#BA7517"></span>비금속</button>
   </div>
+
+  <!-- 주기율표 중앙 정렬 -->
   <div class="table-scroll">
     <div id="pt-grid" class="pt-grid"></div>
   </div>
-  <div class="series-section">
-    <div class="series-title">란타넘족 (57–71)</div>
-    <div class="series-row" id="lant-row"></div>
+
+  <!-- 란타넘족 / 악티늄족 — JS로 중앙 정렬 offset 계산 후 주입 -->
+  <div class="series-section" id="series-lant">
+    <div class="series-inner" id="series-lant-inner"></div>
   </div>
-  <div class="series-section">
-    <div class="series-title">악티늄족 (89–118)</div>
-    <div class="series-row" id="act-row"></div>
+  <div class="series-section" id="series-act">
+    <div class="series-inner" id="series-act-inner"></div>
   </div>
 
   <div class="cnt-popup" id="cntPopup">
@@ -95,15 +104,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="cnt-btns" id="cntBtns"></div>
   </div>
 
-  <div class="formula-bar">
-    <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
-    <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">⌫</button>
-    <button class="btn-icon" onclick="clearFormula()">초기화</button>
-    <button class="btn-calc" onclick="calculate()">계산</button>
+  <div class="formula-bar-wrap">
+    <div class="formula-bar">
+      <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
+      <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">⌫</button>
+      <button class="btn-icon" onclick="clearFormula()">초기화</button>
+      <button class="btn-calc" onclick="calculate()">계산</button>
+    </div>
   </div>
 
   <div id="resultArea" style="display:none"></div>
-
   <div class="hint">원소 클릭 → 개수 선택 → 계산</div>
 </div>
 
@@ -232,6 +242,7 @@ const ELEMENTS = [
 const CAT_COLORS = {metal:"#85B7EB", metalloid:"#C0DD97", nonmetal:"#FAC775"};
 let activeFilter = 'all';
 let formula = [];
+let cellSize = 36; // 전역으로 저장해 시리즈 정렬에 재사용
 
 function makeCellSize() {
   const w = document.querySelector('.pt-wrap').offsetWidth || 360;
@@ -260,12 +271,16 @@ function renderCell(el, size) {
 }
 
 function renderGrid() {
-  const size = makeCellSize();
+  cellSize = makeCellSize();
+  const size = cellSize;
+  const gap = 2;
+  const cellStep = size + gap;
+
   const grid = document.getElementById('pt-grid');
   grid.style.gridTemplateColumns = `40px repeat(18,${size}px)`;
   grid.innerHTML = '';
 
-  // group header
+  // 그룹 헤더
   grid.appendChild(Object.assign(document.createElement('div'), {className:'group-label'}));
   for (let g = 1; g <= 18; g++) {
     const lbl = document.createElement('div');
@@ -275,6 +290,7 @@ function renderGrid() {
     grid.appendChild(lbl);
   }
 
+  // 주기 행
   for (let p = 1; p <= 7; p++) {
     const pl = document.createElement('div');
     pl.className = 'period-label';
@@ -291,41 +307,95 @@ function renderGrid() {
         grid.appendChild(ph);
         continue;
       }
-      const el = ELEMENTS.find(e =>
-        e.period === p && e.group === g && !e.series
-      );
+      const el = ELEMENTS.find(e => e.period === p && e.group === g && !e.series);
       grid.appendChild(renderCell(el || null, size));
     }
   }
 
-  // 란타넘족
-  const cellStep = size + 2;
-  const seriesLeft = 40 + 2 * cellStep;
-  document.querySelectorAll('.series-section')[0].style.paddingLeft = seriesLeft + 'px';
-  const lantRow = document.getElementById('lant-row');
-  lantRow.innerHTML = '';
-  for (let n = 57; n <= 71; n++) {
-    const el = ELEMENTS.find(e => e.num === n);
-    if (el) lantRow.appendChild(renderCell(el, size));
-  }
+  // ── 주기율표 전체 너비 계산 ──
+  // 전체 그리드 너비 = 40(period label) + gap + 18*(size+gap) - gap
+  const gridTotalWidth = 40 + gap + 18 * cellStep - gap;
 
-  // 악티늄족 — querySelectorAll로 두 번째 series-section을 직접 참조 (재렌더링 시 act-row id가 사라져도 안전)
-  const allSections = document.querySelectorAll('.series-section');
-  const actSection = allSections[allSections.length - 1];
-  actSection.style.paddingLeft = seriesLeft + 'px';
-  actSection.innerHTML = '<div class="series-title">악티늄족 (89\u2013118)</div>' +
-    '<div class="series-row" id="act-row1"></div>' +
-    '<div class="series-row" id="act-row2" style="margin-top:2px"></div>';
-  const actRow1 = document.getElementById('act-row1');
-  const actRow2 = document.getElementById('act-row2');
-  for (let n = 89;  n <= 103; n++) { const el = ELEMENTS.find(e => e.num === n); if (el) actRow1.appendChild(renderCell(el, size)); }
-  for (let n = 104; n <= 118; n++) { const el = ELEMENTS.find(e => e.num === n); if (el) actRow2.appendChild(renderCell(el, size)); }
+  // 시리즈 행은 group 3(index 2)부터 시작 → 왼쪽 오프셋
+  // period label(40) + gap + 2개 셀(group1,group2) = 40 + gap + 2*cellStep
+  const seriesStartX = 40 + gap + 2 * cellStep;
 
-  // 현재 선택된 원소 하이라이트 유지
+  // 란타넘족: 57~71 = 15개 셀, 악티늄족 행1: 89~103 = 15개, 행2: 104~118 = 15개
+  // 15개 셀 너비 = 15*size + 14*gap
+  const seriesWidth = 15 * size + 14 * gap;
+
+  // 시리즈 inner div 너비를 주기율표 전체와 동일하게 하고,
+  // 셀 행에 padding-left 로 group3 위치를 맞춤
+  renderSeries(
+    'series-lant-inner',
+    '란타넘족 (57–71)',
+    57, 71, null,
+    gridTotalWidth, seriesStartX, size, gap
+  );
+  renderActinide(
+    'series-act-inner',
+    gridTotalWidth, seriesStartX, size, gap
+  );
+
+  // 현재 선택 상태 복원
   formula.forEach(f => {
     const cell = document.getElementById('cell-' + f.sym);
     if (cell) cell.classList.add('selected');
   });
+}
+
+function renderSeries(innerId, title, from, to, _, totalW, startX, size, gap) {
+  const inner = document.getElementById(innerId);
+  inner.innerHTML = '';
+  inner.style.width = totalW + 'px';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'series-title';
+  titleEl.style.cssText = `padding-left:${startX}px;margin-bottom:3px`;
+  titleEl.textContent = title;
+  inner.appendChild(titleEl);
+
+  const row = document.createElement('div');
+  row.className = 'series-row';
+  row.style.paddingLeft = startX + 'px';
+
+  for (let n = from; n <= to; n++) {
+    const el = ELEMENTS.find(e => e.num === n);
+    if (el) row.appendChild(renderCell(el, size));
+  }
+  inner.appendChild(row);
+}
+
+function renderActinide(innerId, totalW, startX, size, gap) {
+  const inner = document.getElementById(innerId);
+  inner.innerHTML = '';
+  inner.style.width = totalW + 'px';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'series-title';
+  titleEl.style.cssText = `padding-left:${startX}px;margin-bottom:3px`;
+  titleEl.textContent = '악티늄족 (89–118)';
+  inner.appendChild(titleEl);
+
+  // 행1: 89~103
+  const row1 = document.createElement('div');
+  row1.className = 'series-row';
+  row1.style.paddingLeft = startX + 'px';
+  for (let n = 89; n <= 103; n++) {
+    const el = ELEMENTS.find(e => e.num === n);
+    if (el) row1.appendChild(renderCell(el, size));
+  }
+  inner.appendChild(row1);
+
+  // 행2: 104~118
+  const row2 = document.createElement('div');
+  row2.className = 'series-row';
+  row2.style.cssText = `padding-left:${startX}px;margin-top:2px`;
+  for (let n = 104; n <= 118; n++) {
+    const el = ELEMENTS.find(e => e.num === n);
+    if (el) row2.appendChild(renderCell(el, size));
+  }
+  inner.appendChild(row2);
 }
 
 function openPopup(sym) {
@@ -345,7 +415,6 @@ function openPopup(sym) {
   }
   const popup = document.getElementById('cntPopup');
   popup.classList.add('open');
-  popup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function addElement(sym, cnt) {
@@ -425,10 +494,9 @@ function calculate() {
     ${hasRadio ? '<p class="radio-note">* 방사성 원소: 가장 안정한 동위원소 질량수 사용</p>' : ''}
     <p class="iupac-note">IUPAC 2021 표준 원자량 기준</p>`;
   area.style.display = 'block';
-  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  area.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-// 필터 버튼
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
