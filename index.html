@@ -16,7 +16,6 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .filter-btn.active{border-color:rgba(0,0,0,0.35);filter:brightness(0.88);font-weight:600;color:#222}
 .filter-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,0.15)}
 
-/* 주기율표 — flex-shrink:0, 높이는 JS가 결정 */
 .table-scroll{overflow:visible;display:flex;justify-content:center;flex-shrink:0}
 .pt-grid{display:inline-grid;gap:2px}
 .period-label{display:flex;align-items:center;justify-content:center;font-size:10px;color:#888;font-weight:500}
@@ -31,17 +30,16 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .placeholder{border-radius:4px;border:1px dashed #bbb;display:flex;align-items:center;justify-content:center;color:#aaa;cursor:default}
 .empty{background:transparent;border:none}
 
-/* 시리즈 행 */
 .series-section{margin-top:4px;display:flex;justify-content:center;flex-shrink:0}
 .series-inner{display:flex;flex-direction:column;gap:3px}
 .series-title{font-size:11px;color:#666;font-weight:500;white-space:nowrap;margin-bottom:2px}
 .series-row{display:flex;gap:2px}
 
-/* Count popup + formula bar — 같은 줄, 같은 높이 */
-/* 화학식 바 + 결과창 공통 중앙 컨테이너 */
-.center-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;overflow:visible}
-.bottom-bar{width:500px;max-width:90vw;margin:4px 0;flex-shrink:0;position:relative;overflow:visible}
-.formula-bar-wrap{position:relative;width:100%;overflow:visible}
+/* 화학식 바 영역 */
+.center-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;position:relative}
+.bottom-bar{width:500px;max-width:90vw;margin:6px 0 4px;flex-shrink:0;position:relative}
+
+/* 개수 선택 팝업 */
 .cnt-popup{display:none;position:fixed;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;box-shadow:0 4px 12px rgba(0,0,0,.12);align-items:center;gap:6px;white-space:nowrap;z-index:9999;transform:translateX(-50%)}
 .cnt-popup.open{display:flex}
 .cnt-popup::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#d1d5db}
@@ -52,7 +50,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .cnt-btn:hover{background:#e0f2fe}
 .radio-badge{font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;margin-left:2px}
 
-/* Formula bar */
+/* 화학식 바 */
 .formula-bar{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:100%}
 .formula-display{font-family:'Courier New',monospace;font-size:16px;font-weight:600;color:#111;flex:1;min-width:60px;word-break:break-all}
 .formula-placeholder{font-size:12px;color:#9ca3af;flex:1}
@@ -61,22 +59,76 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .btn-calc{padding:5px 16px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:#0891b2;color:#fff;transition:background .12s;align-self:stretch}
 .btn-calc:hover{background:#0e7490}
 
-/* Result — 항상 보이는 고정 영역 */
-.result-wrap{flex-shrink:0;height:180px;overflow-y:auto;width:500px;max-width:90vw;padding-top:4px}
-.result-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px 20px;width:100%;box-sizing:border-box}
-.formula-header{font-size:13px;color:#374151;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e5e7eb;font-weight:500}
+/* ── 결과 오버레이 ── */
+/* 화학식 바 바로 위에 fixed로 띄움 */
+.result-overlay{
+  display:none;
+  position:fixed;
+  z-index:8000;
+  /* left/top/width는 JS로 설정 */
+  background:#fff;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  overflow:hidden;
+  /* 아래쪽 화살표 */
+}
+.result-overlay.open{display:block}
+/* 아래 꼬리 */
+.result-overlay::after{
+  content:'';position:absolute;bottom:-7px;left:50%;
+  transform:translateX(-50%);
+  border:7px solid transparent;
+  border-top-color:#d1d5db;
+}
+.result-overlay::before{
+  content:'';position:absolute;bottom:-6px;left:50%;
+  transform:translateX(-50%);
+  border:7px solid transparent;
+  border-top-color:#fff;
+  z-index:1;
+}
+
+/* 오버레이 내부 */
+.result-inner{
+  padding:12px 16px;
+  max-height:50vh;
+  overflow-y:auto;
+  width:100%;
+}
+.result-inner::-webkit-scrollbar{width:4px}
+.result-inner::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+
+/* 오버레이 헤더 (닫기 버튼 포함) */
+.result-overlay-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;
+  border-bottom:1px solid #f0f0f0;
+  background:#f9fafb;
+}
+.result-overlay-title{font-size:13px;font-weight:700;color:#111}
+.result-close-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:16px;color:#9ca3af;padding:0 4px;line-height:1;
+}
+.result-close-btn:hover{color:#374151}
+
+.formula-header{font-size:12px;color:#374151;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e5e7eb;font-weight:500}
 .formula-header span{font-weight:700;color:#111;font-family:'Courier New',monospace}
-.result-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0}
-.r-sym{font-size:15px;font-weight:700;color:#111;font-family:'Courier New',monospace}
-.r-name{font-size:12px;color:#555;margin-left:2px}
-.r-math{font-size:13px;color:#444;text-align:right;white-space:nowrap}
-.r-sub{font-size:14px;font-weight:700;color:#111;text-align:right;white-space:nowrap}
-.result-total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0}
-.r-total-label{font-size:14px;font-weight:600;color:#374151}
-.r-total-val{font-size:26px;font-weight:700;color:#0891b2}
-.r-unit{font-size:13px;color:#555;margin-left:4px}
-.radio-note{font-size:11px;color:#b45309;margin-top:6px}
-.iupac-note{font-size:11px;color:#9ca3af;margin-top:4px}
+.result-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.result-row:last-of-type{border-bottom:none}
+.r-sym{font-size:14px;font-weight:700;color:#111;font-family:'Courier New',monospace}
+.r-name{font-size:11px;color:#555;margin-left:2px}
+.r-math{font-size:12px;color:#666;text-align:right;white-space:nowrap}
+.r-sub{font-size:13px;font-weight:700;color:#111;text-align:right;white-space:nowrap}
+.result-total{display:flex;flex-direction:column;gap:4px;padding:8px 0 0;margin-top:4px;border-top:2px solid #e5e7eb}
+.result-total-row{display:flex;justify-content:space-between;align-items:baseline}
+.r-total-label{font-size:13px;font-weight:600;color:#374151}
+.r-total-val{font-size:24px;font-weight:700;color:#0891b2}
+.r-unit{font-size:12px;color:#555;margin-left:3px}
+.radio-note{font-size:11px;color:#b45309;margin-top:4px}
+.iupac-note{font-size:10px;color:#9ca3af;margin-top:3px}
+
 .hint{margin-top:4px;text-align:center;font-size:11px;color:#aaa;flex-shrink:0}
 </style>
 </head>
@@ -91,12 +143,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
     <button class="filter-btn" data-cat="nonmetal" style="background:#FAC775"><span class="dot" style="background:#BA7517"></span>비금속</button>
   </div>
 
-  <!-- 주기율표 중앙 정렬 -->
   <div class="table-scroll">
     <div id="pt-grid" class="pt-grid"></div>
   </div>
 
-  <!-- 란타넘족 / 악티늄족 — JS로 중앙 정렬 offset 계산 후 주입 -->
   <div class="series-section" id="series-lant">
     <div class="series-inner" id="series-lant-inner"></div>
   </div>
@@ -106,24 +156,31 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
   <div class="center-col">
     <div class="bottom-bar">
-      <div class="formula-bar-wrap">
-        <div class="cnt-popup" id="cntPopup">
-          <div class="cnt-title" id="cntTitle"></div>
-          <div class="cnt-btns" id="cntBtns"></div>
-        </div>
-        <div class="formula-bar">
-          <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
-          <button class="btn-icon" onclick="backspace()" title="마지막 원소 삭제">← 삭제</button>
-          <button class="btn-icon" onclick="clearFormula()">초기화</button>
-          <button class="btn-calc" onclick="calculate()">계산</button>
-        </div>
+      <!-- 개수 팝업 -->
+      <div class="cnt-popup" id="cntPopup">
+        <div class="cnt-title" id="cntTitle"></div>
+        <div class="cnt-btns" id="cntBtns"></div>
       </div>
-    </div>
-    <div class="result-wrap">
-      <div id="resultArea" style="display:none"></div>
+      <!-- 화학식 바 -->
+      <div class="formula-bar" id="formulaBar">
+        <span class="formula-placeholder" id="formulaDisplay">원소를 클릭해 화학식을 만들어 보세요</span>
+        <button class="btn-icon" onclick="backspace()">← 삭제</button>
+        <button class="btn-icon" onclick="clearFormula()">초기화</button>
+        <button class="btn-calc" onclick="calculate()">계산</button>
+      </div>
     </div>
   </div>
 
+  <div class="hint">원소 클릭 → 개수 선택 → 계산 버튼</div>
+</div>
+
+<!-- 결과 오버레이 (body 직접 자식, fixed 포지셔닝) -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-overlay-header">
+    <span class="result-overlay-title">계산 결과</span>
+    <button class="result-close-btn" onclick="closeResult()">✕</button>
+  </div>
+  <div class="result-inner" id="resultInner"></div>
 </div>
 
 <script>
@@ -251,23 +308,20 @@ const ELEMENTS = [
 const CAT_COLORS = {metal:"#85B7EB", metalloid:"#C0DD97", nonmetal:"#FAC775"};
 let activeFilter = 'all';
 let formula = [];
-let cellSize = 36; // 전역으로 저장해 시리즈 정렬에 재사용
+let cellSize = 36;
 
 function makeCellSize() {
   const wrap = document.querySelector('.pt-wrap');
   const w = wrap.offsetWidth || 360;
-
   const vh = window.innerHeight;
-  const fixedH = 16 + 18 + 14 + 50 + 20 + 30; // 타이틀+부제+필터+formulabar+hint+여백
+  // 고정 요소 높이 합산 (타이틀+부제+필터+formulabar+hint+여유)
+  const fixedH = 16 + 14 + 14 + 50 + 20 + 30 + 30;
   const seriesTitleH = 28;
-  const seriesGapH = 12;
-  const resultH = 184; // 결과창 고정 높이
-  const availH = vh - fixedH - seriesTitleH - seriesGapH - resultH;
+  const seriesGapH   = 12;
+  const availH = vh - fixedH - seriesTitleH - seriesGapH;
   const sizeByH = Math.floor((availH - 10 * 2) / 11);
-
-  const availW = w - 24 - 40;
+  const availW  = w - 24 - 40;
   const sizeByW = Math.floor(availW / 18);
-
   return Math.max(20, Math.min(52, Math.min(sizeByH, sizeByW)));
 }
 
@@ -294,14 +348,13 @@ function renderCell(el, size) {
 function renderGrid() {
   cellSize = makeCellSize();
   const size = cellSize;
-  const gap = 2;
+  const gap  = 2;
   const cellStep = size + gap;
 
   const grid = document.getElementById('pt-grid');
   grid.style.gridTemplateColumns = `40px repeat(18,${size}px)`;
   grid.innerHTML = '';
 
-  // 그룹 헤더
   grid.appendChild(Object.assign(document.createElement('div'), {className:'group-label'}));
   for (let g = 1; g <= 18; g++) {
     const lbl = document.createElement('div');
@@ -311,7 +364,6 @@ function renderGrid() {
     grid.appendChild(lbl);
   }
 
-  // 주기 행
   for (let p = 1; p <= 7; p++) {
     const pl = document.createElement('div');
     pl.className = 'period-label';
@@ -333,53 +385,35 @@ function renderGrid() {
     }
   }
 
-  // ── 주기율표 전체 너비 계산 ──
-  // 전체 그리드 너비 = 40(period label) + gap + 18*(size+gap) - gap
   const gridTotalWidth = 40 + gap + 18 * cellStep - gap;
+  const seriesStartX   = 40 + gap + 2 * cellStep;
 
-  // 시리즈 행은 group 3(index 2)부터 시작 → 왼쪽 오프셋
-  // period label(40) + gap + 2개 셀(group1,group2) = 40 + gap + 2*cellStep
-  const seriesStartX = 40 + gap + 2 * cellStep;
+  renderSeries('series-lant-inner', '란타넘족 (57–71)', 57, 71, gridTotalWidth, seriesStartX, size);
+  renderActinide('series-act-inner', gridTotalWidth, seriesStartX, size);
 
-  // 란타넘족: 57~71 = 15개 셀, 악티늄족 행1: 89~103 = 15개, 행2: 104~118 = 15개
-  // 15개 셀 너비 = 15*size + 14*gap
-  const seriesWidth = 15 * size + 14 * gap;
-
-  // 시리즈 inner div 너비를 주기율표 전체와 동일하게 하고,
-  // 셀 행에 padding-left 로 group3 위치를 맞춤
-  renderSeries(
-    'series-lant-inner',
-    '란타넘족 (57–71)',
-    57, 71, null,
-    gridTotalWidth, seriesStartX, size, gap
-  );
-  renderActinide(
-    'series-act-inner',
-    gridTotalWidth, seriesStartX, size, gap
-  );
-
-  // 현재 선택 상태 복원
   formula.forEach(f => {
     const cell = document.getElementById('cell-' + f.sym);
     if (cell) cell.classList.add('selected');
   });
+
+  // 오버레이가 열려있으면 위치 재조정
+  if (document.getElementById('resultOverlay').classList.contains('open')) {
+    positionOverlay();
+  }
 }
 
-function renderSeries(innerId, title, from, to, _, totalW, startX, size, gap) {
+function renderSeries(innerId, title, from, to, totalW, startX, size) {
   const inner = document.getElementById(innerId);
   inner.innerHTML = '';
   inner.style.width = totalW + 'px';
-
   const titleEl = document.createElement('div');
   titleEl.className = 'series-title';
   titleEl.style.cssText = `padding-left:${startX}px;margin-bottom:3px`;
   titleEl.textContent = title;
   inner.appendChild(titleEl);
-
   const row = document.createElement('div');
   row.className = 'series-row';
   row.style.paddingLeft = startX + 'px';
-
   for (let n = from; n <= to; n++) {
     const el = ELEMENTS.find(e => e.num === n);
     if (el) row.appendChild(renderCell(el, size));
@@ -387,18 +421,15 @@ function renderSeries(innerId, title, from, to, _, totalW, startX, size, gap) {
   inner.appendChild(row);
 }
 
-function renderActinide(innerId, totalW, startX, size, gap) {
+function renderActinide(innerId, totalW, startX, size) {
   const inner = document.getElementById(innerId);
   inner.innerHTML = '';
   inner.style.width = totalW + 'px';
-
   const titleEl = document.createElement('div');
   titleEl.className = 'series-title';
   titleEl.style.cssText = `padding-left:${startX}px;margin-bottom:3px`;
   titleEl.textContent = '악티늄족 (89–118)';
   inner.appendChild(titleEl);
-
-  // 행1: 89~103
   const row1 = document.createElement('div');
   row1.className = 'series-row';
   row1.style.paddingLeft = startX + 'px';
@@ -407,8 +438,6 @@ function renderActinide(innerId, totalW, startX, size, gap) {
     if (el) row1.appendChild(renderCell(el, size));
   }
   inner.appendChild(row1);
-
-  // 행2: 104~118
   const row2 = document.createElement('div');
   row2.className = 'series-row';
   row2.style.cssText = `padding-left:${startX}px;margin-top:2px`;
@@ -419,9 +448,10 @@ function renderActinide(innerId, totalW, startX, size, gap) {
   inner.appendChild(row2);
 }
 
+/* ── 개수 팝업 ── */
 function openPopup(sym) {
   const el = ELEMENTS.find(e => e.sym === sym);
-  const s = cellSize;
+  const s  = cellSize;
   document.getElementById('cntTitle').innerHTML =
     `<span style="font-family:'Courier New',monospace;font-size:${Math.max(11,s*0.28)}px;font-weight:700">${el.sym}</span> ` +
     `<span style="font-size:${Math.max(9,s*0.22)}px;color:#6b7280">${el.name} · 원자량 ${el.mass}</span>` +
@@ -439,25 +469,93 @@ function openPopup(sym) {
   }
   const popup = document.getElementById('cntPopup');
   popup.classList.add('open');
-
-  // formula-bar 기준으로 팝업 위치 계산 (fixed)
-  const bar = document.querySelector('.formula-bar');
+  const bar  = document.getElementById('formulaBar');
   const rect = bar.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const topY = rect.top - 6;
-  popup.style.left = centerX + 'px';
-  popup.style.top = topY + 'px';
+  popup.style.left      = (rect.left + rect.width / 2) + 'px';
+  popup.style.top       = (rect.top - 6) + 'px';
   popup.style.transform = 'translate(-50%, -100%)';
 }
+
+/* ── 결과 오버레이 위치 계산 ── */
+function positionOverlay() {
+  const bar     = document.getElementById('formulaBar');
+  const overlay = document.getElementById('resultOverlay');
+  const rect    = bar.getBoundingClientRect();
+  const ovW     = Math.min(500, window.innerWidth * 0.9);
+  // 화학식 바 바로 위에 붙임
+  const ovBottom = window.innerHeight - rect.top + 8; // 바 위 8px 간격
+  const ovLeft   = rect.left + rect.width / 2 - ovW / 2;
+  const clampedLeft = Math.max(8, Math.min(ovLeft, window.innerWidth - ovW - 8));
+  overlay.style.width  = ovW + 'px';
+  overlay.style.left   = clampedLeft + 'px';
+  overlay.style.bottom = ovBottom + 'px';
+  overlay.style.top    = 'auto';
+  // 최대 높이: 화학식 바 위 공간의 55%
+  overlay.style.maxHeight = (rect.top * 0.55) + 'px';
+}
+
+/* ── 계산 & 오버레이 표시 ── */
+function calculate() {
+  if (!formula.length) return;
+  let total = 0, hasRadio = false, rows = '';
+  formula.forEach(({ sym, cnt }) => {
+    const el  = ELEMENTS.find(e => e.sym === sym);
+    const sub = el.mass * cnt;
+    total += sub;
+    if (el.radio) hasRadio = true;
+    const rb = el.radio ? '<span class="radio-badge">방사성</span>' : '';
+    rows += `<div class="result-row">
+      <div><span class="r-sym">${sym}</span><span class="r-name">${el.name}</span>${rb}</div>
+      <span class="r-math">${el.mass} × ${cnt}</span>
+      <span class="r-sub">${formatMass(sub)}</span>
+    </div>`;
+  });
+  const fs = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
+  document.getElementById('resultInner').innerHTML = `
+    <div class="formula-header">화학식: <span>${fs}</span></div>
+    ${rows}
+    <div class="result-total">
+      <div class="result-total-row">
+        <span class="r-total-label">화학식량</span>
+        <span><span class="r-total-val">${formatMass(total)}</span><span class="r-unit">g/mol</span></span>
+      </div>
+      <div class="result-total-row">
+        <span class="r-total-label" style="color:#0891b2">역수 (1/M)</span>
+        <span><span class="r-total-val" style="font-size:20px;color:#0891b2">${formatMass(1/total)}</span><span class="r-unit">mol/g</span></span>
+      </div>
+    </div>
+    ${hasRadio ? '<p class="radio-note">* 방사성 원소: 가장 안정한 동위원소 질량수 사용</p>' : ''}
+    <p class="iupac-note">IUPAC 2021 표준 원자량 기준</p>`;
+
+  const overlay = document.getElementById('resultOverlay');
+  overlay.classList.add('open');
+  positionOverlay();
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').classList.remove('open');
+}
+
+/* 오버레이 바깥 클릭 시 닫기 */
+document.addEventListener('click', e => {
+  const overlay = document.getElementById('resultOverlay');
+  const bar     = document.getElementById('formulaBar');
+  if (overlay.classList.contains('open') &&
+      !overlay.contains(e.target) &&
+      !bar.contains(e.target)) {
+    overlay.classList.remove('open');
+  }
+});
 
 function addElement(sym, cnt) {
   const existing = formula.find(f => f.sym === sym);
   if (existing) existing.cnt += cnt;
   else formula.push({ sym, cnt });
   document.getElementById('cntPopup').classList.remove('open');
+  // 결과 오버레이가 열려있으면 닫기 (새 원소 추가 시)
+  closeResult();
   updateDisplay();
   updateSelectedCells();
-  document.getElementById('resultArea').style.display = 'none';
 }
 
 function updateSelectedCells() {
@@ -482,50 +580,20 @@ function updateDisplay() {
 function backspace() {
   if (!formula.length) return;
   formula.pop();
+  closeResult();
   updateDisplay();
   updateSelectedCells();
-  document.getElementById('resultArea').style.display = 'none';
 }
 
 function clearFormula() {
   formula = [];
   document.getElementById('cntPopup').classList.remove('open');
+  closeResult();
   updateDisplay();
   updateSelectedCells();
-  document.getElementById('resultArea').style.display = 'none';
 }
 
 function formatMass(v) { return parseFloat(v.toFixed(9)).toString(); }
-
-function calculate() {
-  if (!formula.length) return;
-  let total = 0, hasRadio = false, rows = '';
-  formula.forEach(({ sym, cnt }) => {
-    const el = ELEMENTS.find(e => e.sym === sym);
-    const sub = el.mass * cnt;
-    total += sub;
-    if (el.radio) hasRadio = true;
-    const rb = el.radio ? '<span class="radio-badge">방사성</span>' : '';
-    rows += `<div class="result-row">
-      <div><span class="r-sym">${sym}</span> <span class="r-name">${el.name}</span>${rb}</div>
-      <span class="r-math">${el.mass} × ${cnt}</span>
-      <span class="r-sub">${formatMass(sub)}</span>
-    </div>`;
-  });
-  const fs = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
-  const area = document.getElementById('resultArea');
-  area.className = 'result-card';
-  area.innerHTML = `
-    <div class="formula-header">화학식: <span>${fs}</span></div>
-    ${rows}
-    <div class="result-total">
-      <span class="r-total-label">화학식량</span>
-      <span><span class="r-total-val">${formatMass(total)}</span><span class="r-unit">g/mol</span></span>
-    </div>
-    ${hasRadio ? '<p class="radio-note">* 방사성 원소: 가장 안정한 동위원소 질량수 사용</p>' : ''}
-    <p class="iupac-note">IUPAC 2021 표준 원자량 기준</p>`;
-  area.style.display = 'block';
-}
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', function() {
@@ -539,7 +607,10 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 renderGrid();
 window.addEventListener('resize', () => {
   clearTimeout(window._rt);
-  window._rt = setTimeout(renderGrid, 100);
+  window._rt = setTimeout(() => {
+    renderGrid();
+    if (document.getElementById('resultOverlay').classList.contains('open')) positionOverlay();
+  }, 100);
 });
 </script>
 </body>
