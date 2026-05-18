@@ -6,28 +6,26 @@
 <title>화학식량 계산기</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;background:#1a1f14}
-body{
-  height:100%;overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  color:#222;
-}
-body{
+html,body{
+  min-height:100%;
   background:
     radial-gradient(ellipse at 20% 50%, rgba(34,85,34,0.18) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 20%, rgba(180,120,40,0.13) 0%, transparent 50%),
     radial-gradient(ellipse at 60% 80%, rgba(20,60,100,0.15) 0%, transparent 55%),
     linear-gradient(135deg, #1a1f14 0%, #2c3320 30%, #1e2a1a 60%, #151c10 100%);
+}
+body{
+  overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:#222;
   display:flex;align-items:flex-start;justify-content:center;
-  padding:10px;
+  padding:12px;
 }
 
 /* ── 메인 패널: 양피지 느낌 ── */
 .pt-wrap{
   padding:8px 12px;
-  width:fit-content;max-width:calc(100vw - 20px);
-  min-width:min(calc(100vw - 20px), 800px);
-  height:calc(100vh - 20px);
+  width:fit-content;max-width:calc(100vw - 24px);
   display:flex;flex-direction:column;overflow:hidden;
   background:rgba(245,240,225,0.93);
   border-radius:12px;
@@ -373,32 +371,35 @@ let formula = [];
 let cellSize = 36;
 
 function makeCellSize() {
-  const wrap = document.querySelector('.pt-wrap');
-  const w = wrap.offsetWidth || 360;
-  // pt-wrap 높이 = 100vh - 20px (body padding 10px*2)
-  const vh = window.innerHeight - 20;
+  const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+  // 가로 기준
+  const byW = Math.floor((vw - 24 - 4 - 40 - 2 * 18) / 18);
 
   function calcNonGridH(s) {
-    const t = Math.min(Math.max(s, 20), 52);
-    const titleH   = 18 + 2;   // pt-title
-    const ctrlH    = Math.round((3+(t-20)*(6-3)/(52-20))*2 + (9+(t-20)*(13-9)/(52-20))) * 1.2 + 8;
-    const sTitleH  = Math.round(8+(t-20)*(12-8)/(52-20)) + 2; // series-title
-    const seriesMarginT = 4;   // series-section margin-top
-    const formulaH = 44 + 6 + 3; // formula-bar 높이 + center-col margin
-    const bodyPad  = 8 + 8 + 8 + 8 + 16; // pt-wrap padding + 안전여유
+    const t = Math.min(Math.max(s, 20), 60);
+    const titleFS  = Math.round(11 + (t-24)*(20-11)/(52-24));
+    const titleMB  = Math.round(4  + (t-24)*(8-4)  /(52-24));
+    const btnPadV  = Math.round(3  + (t-24)*(6-3)  /(52-24));
+    const ctrlFS   = Math.round(9  + (t-24)*(13-9) /(52-24));
+    const ctrlMB   = Math.round(4  + (t-24)*(8-4)  /(52-24));
+    const sTitleFS = Math.round(8  + (t-24)*(12-8) /(52-24));
+    const formulaH = 46 + 10; // formula-bar + margin (계산기 전용)
     return (
-      titleH + ctrlH +
-      seriesMarginT + sTitleH + t + 2 +  // 란타넘족
-      seriesMarginT + sTitleH + t + 2 +  // 악티늄족 1행
-      formulaH + bodyPad
+      (titleFS + titleMB) +
+      (btnPadV*2 + ctrlFS + ctrlMB) * 1.15 +
+      8 + (sTitleFS + t + 2) +  // 란타넘족
+      8 + (sTitleFS + t + 2) +  // 악티늄족 (1행)
+      formulaH +
+      20 + 8
     );
   }
 
-  const byW = Math.floor((w - 24 - 40) / 18);
-  let size = Math.min(byW, 52);
+  let size = Math.min(byW, 60);
   for (let i = 0; i < 8; i++) {
     const ngh = calcNonGridH(size);
-    const byH = Math.floor((vh - ngh - 2*7) / 8);
+    const byH = Math.floor((vh - ngh - 2 * 7) / 8);
     const next = Math.max(20, Math.min(52, Math.min(byW, byH)));
     if (next === size) break;
     size = next;
