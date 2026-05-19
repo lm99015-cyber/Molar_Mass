@@ -45,16 +45,7 @@ body{
   margin-bottom:2px;text-align:center;flex-shrink:0;
   letter-spacing:0.5px;text-shadow:0 1px 0 rgba(255,255,255,0.6);
 }
-.pt-subtitle{
-  font-size:12px;font-weight:700;color:#5c3a00;
-  white-space:nowrap;flex-shrink:0;
-  border:1.5px solid rgba(180,140,60,0.45);
-  border-radius:20px;
-  padding:4px 12px;
-  background:linear-gradient(135deg,#f5e6b0,#edd87a);
-  box-shadow:0 2px 6px rgba(140,90,0,0.15);
-  letter-spacing:0.2px;
-}
+
 .controls{display:flex;gap:6px;flex-wrap:nowrap;margin-bottom:6px;align-items:center;justify-content:space-between;flex-shrink:0;}
 .filter-btn{
   font-size:11px;padding:4px 12px;
@@ -192,13 +183,25 @@ body{
 .iupac-note{font-size:10px;color:#b08030;margin-top:3px;font-style:italic}
 
 .hint{margin-top:4px;text-align:center;font-size:11px;color:rgba(100,80,30,0.7);flex-shrink:0;font-style:italic}
+
+.map-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  color:#5c3a00;font-weight:700;text-decoration:none;
+  border:1.5px solid #c8961e;border-radius:20px;
+  background:linear-gradient(135deg,#f5e6b0,#edd87a);
+  transition:all .15s;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  white-space:nowrap;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(140,90,0,0.2);
+}
+.map-btn:hover{background:linear-gradient(135deg,#edd87a,#d4a017);border-color:#a07010;}
 </style>
 </head>
 <body>
 <div class="pt-wrap">
   <div class="pt-title">화학식량 계산기</div>
   <div class="controls">
-    <div class="pt-subtitle">원소 클릭 → 개수 선택 → 계산</div>
+    <a class="map-btn" id="mapBtn" href="https://lm99015-cyber.github.io/main_map/">← 원소 탐험맵으로</a>
     <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
     <button class="filter-btn active" data-cat="all" style="background:#f0f0f0">전체</button>
     <button class="filter-btn" data-cat="metal" style="background:#85B7EB"><span class="dot" style="background:#378ADD"></span>금속</button>
@@ -477,6 +480,14 @@ function renderGrid() {
   renderSeries('series-lant-inner', '란타넘족 (57–71)', 57, 71, gridTotalWidth, seriesStartX, size);
   renderActinide('series-act-inner', gridTotalWidth, seriesStartX, size);
 
+  const mapBtn = document.getElementById('mapBtn');
+  if(mapBtn){
+    const _fs = Math.round(9 + (size-20)*(13-9)/(52-20));
+    const _pv = Math.round(3 + (size-20)*(6-3)/(52-20));
+    const _ph = Math.round(8 + (size-20)*(16-8)/(52-20));
+    mapBtn.style.fontSize = _fs + 'px';
+    mapBtn.style.padding  = `${_pv}px ${_ph}px`;
+  }
   formula.forEach(f => {
     const cell = document.getElementById('cell-' + f.sym);
     if (cell) cell.classList.add('selected');
