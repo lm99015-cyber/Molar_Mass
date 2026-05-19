@@ -154,7 +154,7 @@ body{
   transform:translateX(-50%);border:7px solid transparent;
   border-top-color:rgba(245,240,225,0.97);z-index:1;
 }
-.result-inner{padding:12px 16px;max-height:50vh;overflow-y:auto;width:100%;}
+.result-inner{padding:18px 24px;max-height:50vh;overflow-y:auto;width:100%;}
 .result-inner::-webkit-scrollbar{width:4px}
 .result-inner::-webkit-scrollbar-thumb{background:#c8a060;border-radius:2px}
 .result-overlay-header{
@@ -162,25 +162,25 @@ body{
   padding:8px 14px;border-bottom:1px solid rgba(180,140,60,0.25);
   background:rgba(210,180,100,0.15);
 }
-.result-overlay-title{font-size:13px;font-weight:800;color:#3b2000}
+.result-overlay-title{font-size:17px;font-weight:800;color:#3b2000}
 .result-close-btn{background:none;border:none;cursor:pointer;font-size:16px;color:#7a5c1e;padding:0 4px;line-height:1;}
 .result-close-btn:hover{color:#3b2000}
 
-.formula-header{font-size:12px;color:#5c3a00;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(180,140,60,0.25);font-weight:600}
+.formula-header{font-size:18px;color:#5c3a00;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(180,140,60,0.25);font-weight:700}
 .formula-header span{font-weight:700;color:#3b2000;font-family:'Courier New',monospace}
-.result-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(180,140,60,0.12)}
+.result-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(180,140,60,0.12)}
 .result-row:last-of-type{border-bottom:none}
-.r-sym{font-size:14px;font-weight:700;color:#3b2000;font-family:'Courier New',monospace}
-.r-name{font-size:11px;color:#7a5c1e;margin-left:2px}
-.r-math{font-size:12px;color:#7a5c1e;text-align:right;white-space:nowrap}
-.r-sub{font-size:13px;font-weight:700;color:#3b2000;text-align:right;white-space:nowrap}
+.r-sym{font-size:24px;font-weight:700;color:#3b2000;font-family:'Courier New',monospace}
+.r-name{font-size:17px;color:#7a5c1e;margin-left:4px}
+.r-math{font-size:18px;color:#7a5c1e;text-align:right;white-space:nowrap}
+.r-sub{font-size:22px;font-weight:700;color:#3b2000;text-align:right;white-space:nowrap}
 .result-total{display:flex;flex-direction:column;gap:4px;padding:8px 0 0;margin-top:4px;border-top:2px solid rgba(180,140,60,0.3)}
 .result-total-row{display:flex;justify-content:space-between;align-items:baseline}
-.r-total-label{font-size:13px;font-weight:700;color:#5c3a00}
-.r-total-val{font-size:24px;font-weight:800;color:#0891b2}
-.r-unit{font-size:12px;color:#7a5c1e;margin-left:3px}
-.radio-note{font-size:11px;color:#b45309;margin-top:4px}
-.iupac-note{font-size:10px;color:#b08030;margin-top:3px;font-style:italic}
+.r-total-label{font-size:18px;font-weight:700;color:#5c3a00}
+.r-total-val{font-size:36px;font-weight:800;color:#0891b2}
+.r-unit{font-size:16px;color:#7a5c1e;margin-left:4px}
+.radio-note{font-size:13px;color:#b45309;margin-top:6px}
+.iupac-note{font-size:12px;color:#b08030;margin-top:4px;font-style:italic}
 
 .hint{margin-top:4px;text-align:center;font-size:11px;color:rgba(100,80,30,0.7);flex-shrink:0;font-style:italic}
 
@@ -568,7 +568,7 @@ function positionOverlay() {
   const bar     = document.getElementById('formulaBar');
   const overlay = document.getElementById('resultOverlay');
   const rect    = bar.getBoundingClientRect();
-  const ovW     = Math.min(500, window.innerWidth * 0.9);
+  const ovW     = Math.min(420, window.innerWidth * 0.75);
   const ovBottom = window.innerHeight - rect.top + 8;
   const ovLeft   = rect.left + rect.width / 2 - ovW / 2;
   const clampedLeft = Math.max(8, Math.min(ovLeft, window.innerWidth - ovW - 8));
@@ -576,7 +576,7 @@ function positionOverlay() {
   overlay.style.left   = clampedLeft + 'px';
   overlay.style.bottom = ovBottom + 'px';
   overlay.style.top    = 'auto';
-  overlay.style.maxHeight = (rect.top * 0.55) + 'px';
+  overlay.style.maxHeight = (rect.top * 0.88) + 'px';
 }
 
 function calculate() {
@@ -605,7 +605,7 @@ function calculate() {
       </div>
       <div class="result-total-row">
         <span class="r-total-label" style="color:#0891b2">역수 (1/M)</span>
-        <span><span class="r-total-val" style="font-size:20px;color:#0891b2">${formatMass(1/total)}</span><span class="r-unit">mol/g</span></span>
+        <span><span class="r-total-val" style="font-size:30px;color:#0891b2">${formatMass(1/total)}</span><span class="r-unit">mol/g</span></span>
       </div>
     </div>
     ${hasRadio ? '<p class="radio-note">* 방사성 원소: 가장 안정한 동위원소 질량수 사용</p>' : ''}
