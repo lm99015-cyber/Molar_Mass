@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
 <title>화학식 탐험으로 배우는 원소</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -19,7 +20,7 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   color:#222;
   display:flex;align-items:flex-start;justify-content:center;
-  padding:12px;
+  padding:4px 12px;
 }
 
 /* ── 메인 패널: 양피지 느낌 ── */
@@ -72,7 +73,7 @@ body{
 .el-cell.dimmed{opacity:0.15}
 .el-num{line-height:1;color:rgba(0,0,0,0.5)}
 .el-sym{font-weight:600;line-height:1.1;color:rgba(0,0,0,0.85)}
-.el-name{line-height:1;color:rgba(0,0,0,0.55);overflow:hidden;white-space:nowrap;width:100%;text-align:center}
+.el-name{line-height:1;color:rgba(0,0,0,0.55);overflow:hidden;white-space:nowrap;width:100%;text-align:center;font-family:'Noto Sans KR',sans-serif;letter-spacing:-0.06em;font-weight:500}
 .placeholder{
   border-radius:4px;border:1px dashed #b08030;
   display:flex;align-items:center;justify-content:center;
@@ -142,8 +143,10 @@ body{
   border-radius:12px;
   box-shadow:0 8px 32px rgba(0,0,0,0.25);
   overflow:hidden;
+  flex-direction:column;
 }
-.result-overlay.open{display:block}
+.result-overlay.open{display:flex!important;}
+
 .result-overlay::after{
   content:'';position:absolute;bottom:-7px;left:50%;
   transform:translateX(-50%);border:7px solid transparent;
@@ -154,7 +157,7 @@ body{
   transform:translateX(-50%);border:7px solid transparent;
   border-top-color:rgba(245,240,225,0.97);z-index:1;
 }
-.result-inner{padding:18px 24px;max-height:50vh;overflow-y:auto;width:100%;}
+.result-inner{padding:18px 24px;flex:1;overflow-y:auto;width:100%;-webkit-overflow-scrolling:touch;}
 .result-inner::-webkit-scrollbar{width:4px}
 .result-inner::-webkit-scrollbar-thumb{background:#c8a060;border-radius:2px}
 .result-overlay-header{
@@ -371,6 +374,7 @@ const ELEMENTS = [
 const CAT_COLORS = {metal:"#85B7EB", metalloid:"#C0DD97", nonmetal:"#FAC775"};
 let activeFilter = 'all';
 let formula = [];
+let _clearOnClose = false;
 let cellSize = 36;
 
 function makeCellSize() {
@@ -418,13 +422,15 @@ function renderCell(el, size) {
   d.className = 'el-cell';
   d.id = 'cell-' + el.sym;
   d.style.cssText = `width:${size}px;height:${size}px;background:${getColor(el)}`;
-  const fs1 = Math.max(10, Math.floor(size * 0.20)); // 원자번호
-  const fs2 = Math.max(13, Math.floor(size * 0.32)); // 원소기호
-  const fs3Base = Math.max(10, Math.floor(size * 0.22)); // 한글이름
+  const fs1 = 10; // 원자번호 고정 10px
+  const fs2 = 17; // 원소기호 고정 17px
+  // 4글자 기준 크기 계산 → 4글자 이하는 모두 이 크기 사용
+  const fs3_4char = Math.max(10, Math.floor(size * 0.88 / 4));
   const nameLen = el.name.length;
-  const fs3 = nameLen <= 3
-    ? fs3Base
-    : Math.max(8, Math.min(fs3Base, Math.floor(size * 0.88 / nameLen)));
+  // 4글자 이하: 4글자 기준 크기, 5글자 이상: 글자수에 맞게 축소
+  const fs3 = nameLen <= 4
+    ? fs3_4char
+    : Math.max(8, Math.floor(size * 0.88 / nameLen));
   const letterSpacing = nameLen >= 5 ? '-0.04em' : '0';
   d.innerHTML =
     `<span class="el-num"  style="font-size:${fs1}px">${el.num}</span>` +
@@ -569,14 +575,14 @@ function positionOverlay() {
   const overlay = document.getElementById('resultOverlay');
   const rect    = bar.getBoundingClientRect();
   const ovW     = Math.min(420, window.innerWidth * 0.75);
-  const ovBottom = window.innerHeight - rect.top + 8;
+  const ovBottom = window.innerHeight - rect.top + 16; // 하단 0.2cm 확장
   const ovLeft   = rect.left + rect.width / 2 - ovW / 2;
   const clampedLeft = Math.max(8, Math.min(ovLeft, window.innerWidth - ovW - 8));
   overlay.style.width  = ovW + 'px';
   overlay.style.left   = clampedLeft + 'px';
   overlay.style.bottom = ovBottom + 'px';
   overlay.style.top    = 'auto';
-  overlay.style.maxHeight = (rect.top * 0.88) + 'px';
+  overlay.style.maxHeight = (rect.top * 0.95 + 16) + 'px'; // 상단 0.2cm 확장
 }
 
 function calculate() {
@@ -594,9 +600,9 @@ function calculate() {
       <span class="r-sub">${formatMass(sub)}</span>
     </div>`;
   });
-  const fs = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
+  const fs = formula.map(f => f.cnt === 1 ? f.sym : f.sym + `<sub style="font-size:0.65em;vertical-align:sub">${f.cnt}</sub>`).join('');
   document.getElementById('resultInner').innerHTML = `
-    <div class="formula-header">화학식: <span>${fs}</span></div>
+    <div class="formula-header">화학식: <span style="font-family:'Courier New',monospace">${fs}</span></div>
     ${rows}
     <div class="result-total">
       <div class="result-total-row">
@@ -613,10 +619,18 @@ function calculate() {
   const overlay = document.getElementById('resultOverlay');
   overlay.classList.add('open');
   positionOverlay();
+  // 오버레이 열릴 때 formula-bar 텍스트 숨기기
+  // 결과창 열릴 때 화학식 표시를 placeholder로 초기화
+  const fd = document.getElementById('formulaDisplay');
+  fd.className = 'formula-placeholder';
+  fd.textContent = '원소를 클릭해 화학식을 만들어 보세요';
 }
 
 function closeResult() {
   document.getElementById('resultOverlay').classList.remove('open');
+  // 오버레이 닫힐 때 formula-bar 복원
+  // 결과창 닫힐 때 화학식 표시 복원
+  updateDisplay();
 }
 
 document.addEventListener('click', e => {
@@ -626,6 +640,8 @@ document.addEventListener('click', e => {
       !overlay.contains(e.target) &&
       !bar.contains(e.target)) {
     overlay.classList.remove('open');
+    // 결과창 닫힐 때 화학식 표시 복원
+  updateDisplay();
   }
 });
 
@@ -634,7 +650,11 @@ function addElement(sym, cnt) {
   if (existing) existing.cnt += cnt;
   else formula.push({ sym, cnt });
   document.getElementById('cntPopup').classList.remove('open');
-  closeResult();
+  // 결과창이 열려있으면 닫기 (formula 초기화 없이)
+  document.getElementById('resultOverlay').classList.remove('open');
+  _clearOnClose = false;
+  const fd2 = document.getElementById('formulaDisplay');
+  fd2.className = fd2.className; // 복원은 updateDisplay가 처리
   updateDisplay();
   updateSelectedCells();
 }
@@ -654,7 +674,7 @@ function updateDisplay() {
     d.textContent = '원소를 클릭해 화학식을 만들어 보세요';
   } else {
     d.className = 'formula-display';
-    d.textContent = formula.map(f => f.cnt === 1 ? f.sym : f.sym + f.cnt).join('');
+    d.innerHTML = formula.map(f => f.cnt === 1 ? f.sym : f.sym + `<sub style="font-size:0.65em;vertical-align:sub">${f.cnt}</sub>`).join('');
   }
 }
 
@@ -669,7 +689,11 @@ function backspace() {
 function clearFormula() {
   formula = [];
   document.getElementById('cntPopup').classList.remove('open');
-  closeResult();
+  // 결과창이 열려있으면 닫기 (formula 초기화 없이)
+  document.getElementById('resultOverlay').classList.remove('open');
+  _clearOnClose = false;
+  const fd2 = document.getElementById('formulaDisplay');
+  fd2.className = fd2.className; // 복원은 updateDisplay가 처리
   updateDisplay();
   updateSelectedCells();
 }
